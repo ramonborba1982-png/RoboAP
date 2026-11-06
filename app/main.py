@@ -5,8 +5,9 @@ import logging
 
 from fastapi import FastAPI, Header, HTTPException, Request
 
-from app.agente.numeros import extrair_remetente, numero_permitido
+from app.agente.numeros import extrair_remetente, extrair_texto, numero_permitido
 from app.config import get_settings
+from app.evolution import EvolutionClient
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("roboap")
@@ -60,5 +61,11 @@ async def webhook_evolution(
         return {"recebido": True, "ignorado": "remetente_nao_autorizado"}
 
     log.info("evento recebido: %s", evento)
+    # Teste de ida e volta: responde a mensagens de texto de números autorizados.
+    if str(evento).lower() == "messages.upsert" and remetente and extrair_texto(payload):
+        enviado = await EvolutionClient(settings).enviar_texto(
+            remetente, "Recebi sua mensagem. O vendedor IA está em fase de teste."
+        )
+        return {"recebido": True, "resposta_enviada": enviado}
     # Proxima etapa: identificar o cliente, enfileirar a conversa e acionar o agente.
     return {"recebido": True}

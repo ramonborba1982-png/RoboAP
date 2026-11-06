@@ -85,3 +85,24 @@ def test_estrutura_nao_vaza_valores():
     caminhos = estrutura({"data": {"key": {"remoteJid": "5547990000001@s.whatsapp.net"}, "n": [1]}})
     assert "data.key.remoteJid:str" in caminhos
     assert not any("5547" in c for c in caminhos)
+
+
+def test_texto_de_numero_autorizado_recebe_resposta(cliente, monkeypatch):
+    enviados = []
+
+    async def falso(self, numero, texto):
+        enviados.append(numero)
+        return True
+
+    monkeypatch.setattr("app.main.EvolutionClient.enviar_texto", falso)
+    monkeypatch.setenv("TESTE_NUMEROS_PERMITIDOS", "5547990000001")
+    config.get_settings.cache_clear()
+    corpo = evento("5547990000001")
+    corpo["data"]["message"] = {"conversation": "oi"}
+    r = cliente.post("/webhook/evolution", json=corpo, headers=cabecalho())
+    assert r.json() == {"recebido": True, "resposta_enviada": True} and len(enviados) == 1
+    # número fora da lista não recebe nada
+    corpo = evento("5547988887777")
+    corpo["data"]["message"] = {"conversation": "oi"}
+    cliente.post("/webhook/evolution", json=corpo, headers=cabecalho())
+    assert len(enviados) == 1

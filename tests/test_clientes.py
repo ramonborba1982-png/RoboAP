@@ -29,3 +29,9 @@ def test_numero_de_telefone_nao_vira_codigo():
 def test_codigo_curto_demais_ou_no_meio_do_nome():
     assert extrair_codigo_cliente("12-Fulano") is None
     assert extrair_codigo_cliente("Loja 012478-Fulano") is None
+
+
+def test_nome_salvo_com_espacos_e_caixa_alta():
+    from app.agente.clientes import extrair_codigo_cliente
+
+    assert extrair_codigo_cliente("012478 - REINERT E BORBA COM DE PECAS LTDA ME") == "012478"
