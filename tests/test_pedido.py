@@ -103,22 +103,22 @@ def test_retirada_em_joinville_usa_retira_joi():
     assert escolher_transportadora(TRANSPORTADORAS, entrega=False) == "000001 - RETIRA-JOI"
 
 
-def test_retirada_segue_a_filial_que_despacha():
-    assert (
-        escolher_transportadora(TRANSPORTADORAS, entrega=False, filial="ITJ")
-        == "000002 - RETIRA-ITJ"
-    )
+def test_retirada_e_sempre_retira_joi():
+    # Mesmo havendo RETIRA-ITJ na lista, por enquanto só vale RETIRA-JOI.
+    assert escolher_transportadora(TRANSPORTADORAS, entrega=False) == "000001 - RETIRA-JOI"
+    assert escolher_transportadora(TRANSPORTADORAS[::-1], entrega=False) == "000001 - RETIRA-JOI"
 
 
-def test_retirada_de_filial_sem_opcao_cadastrada_nao_chuta():
-    # Não existe RETIRA-CH na lista: não escolhe outra opção, devolve None para escalar.
-    assert escolher_transportadora(TRANSPORTADORAS, entrega=False, filial="CH") is None
+def test_retirada_sem_retira_joi_nao_chuta():
+    # Só existe RETIRA-ITJ: não escolhe, devolve None para escalar.
+    opcoes = [TRANSPORTADORAS[0], "000002 - RETIRA-ITJ"]
+    assert escolher_transportadora(opcoes, entrega=False) is None
 
 
 def test_retirada_sem_nenhuma_opcao_de_retirada_nao_chuta():
     assert escolher_transportadora(TRANSPORTADORAS[:2], entrega=False) is None
 
 
-def test_entrega_nao_depende_da_filial():
+def test_entrega_nunca_escolhe_retirada():
     esperado = "000566 - MOTOX APP TECNOLOGIA LTDA (JOINVILLE)"
-    assert escolher_transportadora(TRANSPORTADORAS, entrega=True, filial="CH") == esperado
+    assert escolher_transportadora(TRANSPORTADORAS[::-1], entrega=True) == esperado

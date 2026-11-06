@@ -36,9 +36,8 @@ class Settings(BaseSettings):
     pedido_dry_run: bool = True
     # Ordem de preferência das filiais. Joinville primeiro.
     pedido_filiais_ordem: str = "JOI,ITJ,CH,SJ,CRI"
-    # Nome da opção de retirada na lista de transportadoras. {filial} vira a filial que despacha
-    # (ex.: RETIRA-JOI para Joinville).
-    pedido_transportadora_retira: str = "RETIRA-{filial}"
+    # Nome da opção de retirada na lista de transportadoras.
+    pedido_transportadora_retira: str = "RETIRA-JOI"
 
     # Números autorizados a falar com o robô durante os testes (só dígitos, com DDI, separados
     # por vírgula). Em modo de teste, sem lista, o robô não responde a ninguém.
