@@ -22,4 +22,16 @@ como variáveis de ambiente no servidor (veja `.env.example`, quando existir).
 
 ## Estado
 
-Em construção.
+Em construção. Já existem e estão testados: regras de pedido (peça, carro e ano), fluxo da
+conversa, escolha de filial, pagamento e transportadora, e a trava de números de teste.
+Ainda falta o módulo que opera o site Nilo e a ligação com o modelo de IA e com o Chatwoot.
+
+O robô nasce em **modo de teste**: não envia pedido e só responde a números autorizados.
+Veja `docs/nilo-fluxo.md`.
+
+## Testes
+
+```
+pip install -r requirements.txt
+python -m pytest -q
+```

@@ -31,9 +31,25 @@ class Settings(BaseSettings):
     gestor_whatsapp: str = ""
     webhook_secret: str = ""
 
-    pedido_filial_padrao: str = ""
-    pedido_condicao_pagamento_padrao: str = ""
-    pedido_transportadora_padrao: str = ""
+    # Modo de teste: vai até a janela "Enviar Pedido" e PARA antes de clicar em enviar.
+    # Só desligue (false) quando a empresa autorizar o envio real.
+    pedido_dry_run: bool = True
+    # Ordem de preferência das filiais. Joinville primeiro.
+    pedido_filiais_ordem: str = "JOI,ITJ,CH,SJ,CRI"
+    # Trecho do nome da opção de retirada na lista de transportadoras (a confirmar no site).
+    pedido_transportadora_retira: str = "retira"
+
+    # Números autorizados a falar com o robô durante os testes (só dígitos, com DDI, separados
+    # por vírgula). Em modo de teste, sem lista, o robô não responde a ninguém.
+    teste_numeros_permitidos: str = ""
+
+    @property
+    def numeros_permitidos(self) -> tuple[str, ...]:
+        return tuple(n.strip() for n in self.teste_numeros_permitidos.split(",") if n.strip())
+
+    @property
+    def filiais_ordem(self) -> tuple[str, ...]:
+        return tuple(f.strip().upper() for f in self.pedido_filiais_ordem.split(",") if f.strip())
 
 
 @lru_cache

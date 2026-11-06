@@ -5,6 +5,7 @@ import logging
 
 from fastapi import FastAPI, Header, HTTPException, Request
 
+from app.agente.numeros import extrair_remetente, numero_permitido
 from app.config import get_settings
 
 log = logging.getLogger("roboap")
@@ -30,6 +31,18 @@ async def webhook_evolution(
 
     payload = await request.json()
     evento = payload.get("event", "desconhecido")
+
+    remetente, enviada_pela_empresa = extrair_remetente(payload)
+    # Mensagens da própria empresa (atendente ou robô) nunca disparam resposta.
+    if enviada_pela_empresa:
+        return {"recebido": True, "ignorado": "mensagem_da_empresa"}
+    # Em teste, só os números autorizados falam com o robô.
+    if remetente and not numero_permitido(
+        remetente, settings.numeros_permitidos, settings.pedido_dry_run
+    ):
+        log.info("mensagem ignorada: remetente fora da lista de teste")
+        return {"recebido": True, "ignorado": "remetente_nao_autorizado"}
+
     log.info("evento recebido: %s", evento)
     # Proxima etapa: identificar o cliente, enfileirar a conversa e acionar o agente.
     return {"recebido": True}

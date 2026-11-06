@@ -27,13 +27,38 @@ validados no site real**; tudo aqui descreve o comportamento, não o HTML.
 2. **Excluir Pedido** e o ícone de lixeira do item: apagam dados. A IA não usa.
 3. **Enviar Pedido**: envia o pedido ao sistema. É o ponto sem volta do projeto.
 
+## Regras definidas pela empresa
+
+| Tema | Regra | Código |
+|---|---|---|
+| Informações do pedido | Só busca com **peça, carro e ano**. Se faltar algo, pergunta só o que falta. | `app/agente/regras.py` |
+| Compatibilidade | Confere o ano do carro com os anos abreviados da descrição. Se a descrição não basta, confere na aba **Aplicação**. | `app/agente/regras.py` |
+| Filial | **Joinville primeiro.** Sem estoque, a próxima da ordem (JOI, ITJ, CH, SJ, CRI). Sem estoque em nenhuma, escala para humano. | `app/agente/pedido.py` |
+| Pagamento | **28 dias** em 1 parcela. Se não existir, **à vista**. Se nenhuma, escala. | `app/agente/pedido.py` |
+| Transportadora | Sempre pergunta ao cliente: **entrega** (MotoX Joinville) ou **retirada**. | `app/agente/pedido.py` |
+| Confirmação | Pede confirmação da peça. Só adiciona ao carrinho depois do "sim". | `app/agente/fluxo.py` |
+| Mais peças | Depois de adicionar, pergunta se precisa de mais alguma peça. | `app/agente/fluxo.py` |
+
+Sequência: pedido completo, busca, confirmação, adicionar, "precisa de mais alguma peça?",
+"entrega ou retirada?", enviar.
+
+## Modo de teste
+
+`PEDIDO_DRY_RUN=true` (padrão) faz o robô ir até a janela **Enviar Pedido** e **parar antes de
+clicar em enviar**. Só mude para `false` com autorização da empresa.
+
+Durante os testes o robô só responde aos números de `TESTE_NUMEROS_PERMITIDOS`. Sem a lista, em
+modo de teste, ele não responde a ninguém. Mensagens enviadas pela própria empresa nunca
+disparam resposta.
+
 ## Pontos ainda em aberto
 
-- Qual filial usar quando mais de uma tem estoque.
-- Qual condição de pagamento usar (o campo é obrigatório e a lista tem opções como PIX, 7, 10, 28, 38, 42 e 49 dias).
-- Qual transportadora usar (aparece uma pré-selecionada).
-- Se o botão **+** da lista de clientes registra check-in.
+- Nome exato da opção de **retirada** na lista de transportadoras (a regra usa o termo `retira`;
+  se não achar, escala para humano em vez de escolher outra).
+- Ordem das filiais depois de Joinville (hoje: ITJ, CH, SJ, CRI).
+- Se o botão **+** da lista de clientes registra check-in (por isso não é usado).
 - Origem da imagem (endereço direto ou apenas exibida na tela).
+- Formato real do evento da Evolution (o código espera `data.key.remoteJid` e `data.key.fromMe`).
 
 ## Estratégia para a foto
 
