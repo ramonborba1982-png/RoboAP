@@ -65,3 +65,20 @@ def test_payload_em_lista_e_payload_estranho():
     assert extrair_remetente(lista)[0] == "5547990000001@s.whatsapp.net"
     assert extrair_remetente({}) == ("", False)
     assert extrair_remetente({"data": "texto"}) == ("", False)
+
+
+def test_lid_usa_remotejidalt():
+    from app.agente.numeros import extrair_nome_perfil, extrair_texto
+
+    payload = {
+        "data": {
+            "key": {"remoteJid": "123@lid", "remoteJidAlt": "5547990000001@s.whatsapp.net", "fromMe": False},
+            "pushName": "Fulano",
+            "message": {"conversation": " pastilha corsa 2008 "},
+        }
+    }
+    assert extrair_remetente(payload)[0] == "5547990000001@s.whatsapp.net"
+    assert extrair_texto(payload) == "pastilha corsa 2008"
+    assert extrair_nome_perfil(payload) == "Fulano"
+    assert extrair_texto({"data": {"message": {"extendedTextMessage": {"text": "oi"}}}}) == "oi"
+    assert extrair_texto({"data": {"message": {"imageMessage": {}}}}) == ""
