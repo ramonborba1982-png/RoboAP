@@ -21,16 +21,18 @@ async def health() -> dict:
 async def webhook_evolution(
     request: Request,
     x_webhook_secret: str | None = Header(default=None),
+    secret: str | None = None,
 ) -> dict:
     settings = get_settings()
     # Sem segredo configurado, o webhook fica fechado em vez de aberto.
-    if not settings.webhook_secret or not hmac.compare_digest(
-        x_webhook_secret or "", settings.webhook_secret
-    ):
+    # A Evolution Manager nem sempre permite cabeçalho: aceita o segredo também em ?secret=.
+    enviado = x_webhook_secret or secret or ""
+    if not settings.webhook_secret or not hmac.compare_digest(enviado, settings.webhook_secret):
         raise HTTPException(status_code=401, detail="nao autorizado")
 
     payload = await request.json()
     evento = payload.get("event", "desconhecido")
+    log.warning("webhook: evento=%s", evento)
 
     remetente, enviada_pela_empresa = extrair_remetente(payload)
     # Mensagens da própria empresa (atendente ou robô) nunca disparam resposta.

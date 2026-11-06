@@ -71,3 +71,9 @@ def test_mensagem_da_empresa_nunca_dispara_resposta(cliente, monkeypatch):
         "/webhook/evolution", json=evento("5547990000001", da_empresa=True), headers=cabecalho()
     )
     assert r.json() == {"recebido": True, "ignorado": "mensagem_da_empresa"}
+
+
+def test_segredo_na_url_tambem_vale(cliente):
+    r = cliente.post(f"/webhook/evolution?secret={SEGREDO}", json=evento("5547990000001"))
+    assert r.status_code == 200
+    assert cliente.post("/webhook/evolution?secret=errado", json=evento("5547990000001")).status_code == 401
