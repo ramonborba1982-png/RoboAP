@@ -8,7 +8,20 @@ from fastapi import FastAPI, Header, HTTPException, Request
 from app.agente.numeros import extrair_remetente, numero_permitido
 from app.config import get_settings
 
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("roboap")
+
+
+def estrutura(valor, prefixo: str = "") -> list[str]:
+    """Lista os caminhos e tipos do JSON, sem os valores (não grava telefone nem texto)."""
+    if isinstance(valor, dict):
+        itens: list[str] = []
+        for chave, v in valor.items():
+            itens += estrutura(v, f"{prefixo}.{chave}" if prefixo else chave)
+        return itens
+    if isinstance(valor, list):
+        return [f"{prefixo}[]"] + (estrutura(valor[0], f"{prefixo}[]") if valor else [])
+    return [f"{prefixo}:{type(valor).__name__}"]
 app = FastAPI(title="RoboAP - Vendedor IA de Pecas")
 
 
@@ -33,6 +46,7 @@ async def webhook_evolution(
     payload = await request.json()
     evento = payload.get("event", "desconhecido")
     log.warning("webhook: evento=%s", evento)
+    log.warning("webhook: formato=%s", " ".join(estrutura(payload)))
 
     remetente, enviada_pela_empresa = extrair_remetente(payload)
     # Mensagens da própria empresa (atendente ou robô) nunca disparam resposta.

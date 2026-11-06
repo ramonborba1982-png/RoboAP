@@ -77,3 +77,11 @@ def test_segredo_na_url_tambem_vale(cliente):
     r = cliente.post(f"/webhook/evolution?secret={SEGREDO}", json=evento("5547990000001"))
     assert r.status_code == 200
     assert cliente.post("/webhook/evolution?secret=errado", json=evento("5547990000001")).status_code == 401
+
+
+def test_estrutura_nao_vaza_valores():
+    from app.main import estrutura
+
+    caminhos = estrutura({"data": {"key": {"remoteJid": "5547990000001@s.whatsapp.net"}, "n": [1]}})
+    assert "data.key.remoteJid:str" in caminhos
+    assert not any("5547" in c for c in caminhos)
