@@ -17,10 +17,15 @@ log = logging.getLogger("roboap")
 
 class EvolutionClient:
     def __init__(self, settings: Settings, transporte: httpx.AsyncBaseTransport | None = None):
-        self._base = settings.evolution_api_url.rstrip("/")
-        self._instancia = settings.evolution_instance
+        self._base = settings.evolution_api_url.strip().rstrip("/")
+        self._instancia = settings.evolution_instance.strip()
+        chave = settings.evolution_api_key.strip()
+        if not chave.isascii():
+            # Costuma ser aspa curva ou espaço especial colado junto da chave.
+            log.warning("evolution: EVOLUTION_API_KEY tem caractere invalido (nao ASCII); ignorada")
+            chave = ""
         self._http = httpx.AsyncClient(
-            headers={"apikey": settings.evolution_api_key},
+            headers={"apikey": chave},
             timeout=20,
             transport=transporte,
         )

@@ -31,3 +31,9 @@ def test_sem_chave_nao_envia():
 
 def test_falha_da_api():
     assert asyncio.run(cliente(lambda r: httpx.Response(401)).enviar_texto("55479", "oi")) is False
+
+
+def test_chave_com_caractere_invalido_nao_quebra():
+    c = cliente(lambda r: httpx.Response(201), chave="abc“def")
+    assert c.configurado is False
+    assert asyncio.run(c.enviar_texto("55479", "oi")) is False
