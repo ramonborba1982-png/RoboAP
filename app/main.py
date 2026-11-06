@@ -5,7 +5,9 @@ import logging
 
 from fastapi import FastAPI, Header, HTTPException, Request
 
-from app.agente.numeros import extrair_remetente, extrair_texto, numero_permitido
+from app.agente.numeros import apenas_digitos, extrair_remetente, extrair_texto, numero_permitido
+from app.agente.conversa import Conversa
+from app.agente.interprete import InterpreteClaude, InterpreteRegras
 from app.config import get_settings
 from app.evolution import EvolutionClient
 
@@ -24,6 +26,22 @@ def estrutura(valor, prefixo: str = "") -> list[str]:
         return [f"{prefixo}[]"] + (estrutura(valor[0], f"{prefixo}[]") if valor else [])
     return [f"{prefixo}:{type(valor).__name__}"]
 app = FastAPI(title="RoboAP - Vendedor IA de Pecas")
+
+
+_conversa: Conversa | None = None
+
+
+def get_conversa() -> Conversa:
+    global _conversa
+    if _conversa is None:
+        cfg = get_settings()
+        if cfg.anthropic_api_key.isascii() and cfg.anthropic_api_key and cfg.anthropic_model:
+            interprete = InterpreteClaude(cfg.anthropic_api_key.strip(), cfg.anthropic_model.strip())
+        else:
+            log.warning("sem ANTHROPIC_API_KEY/MODEL: usando interprete simples")
+            interprete = InterpreteRegras()
+        _conversa = Conversa(interprete)
+    return _conversa
 
 
 @app.get("/health")
@@ -63,9 +81,10 @@ async def webhook_evolution(
     log.info("evento recebido: %s", evento)
     # Teste de ida e volta: responde a mensagens de texto de números autorizados.
     if str(evento).lower() == "messages.upsert" and remetente and extrair_texto(payload):
-        enviado = await EvolutionClient(settings).enviar_texto(
-            remetente, "Recebi sua mensagem. O vendedor IA está em fase de teste."
-        )
+        cliente = EvolutionClient(settings)
+        enviado = False
+        for texto in await get_conversa().responder(apenas_digitos(remetente), extrair_texto(payload)):
+            enviado = await cliente.enviar_texto(remetente, texto)
         return {"recebido": True, "resposta_enviada": enviado}
     # Proxima etapa: identificar o cliente, enfileirar a conversa e acionar o agente.
     return {"recebido": True}
