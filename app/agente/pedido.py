@@ -62,13 +62,19 @@ def escolher_condicao_pagamento(opcoes: list[str]) -> str | None:
 def escolher_transportadora(
     opcoes: list[str],
     entrega: bool,
-    termo_retirada: str = "retira",
+    filial: str = "JOI",
+    modelo_retirada: str = "RETIRA-{filial}",
 ) -> str | None:
-    """Entrega: MotoX Joinville. Retirada: a opção de retirada do cliente."""
+    """Entrega: MotoX Joinville. Retirada: a opção de retirada da filial que despacha.
+
+    Se o pedido sai de Joinville, a retirada é RETIRA-JOI. Se a opção não existir, devolve
+    None (escala para humano) em vez de escolher outra transportadora.
+    """
+    termo_retirada = _norm(modelo_retirada.format(filial=filial))
     for original in opcoes:
         n = _norm(original)
         if entrega and "motox" in n and "joinville" in n:
             return original
-        if not entrega and _norm(termo_retirada) in n:
+        if not entrega and termo_retirada in n:
             return original
     return None

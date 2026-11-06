@@ -35,7 +35,8 @@ validados no site real**; tudo aqui descreve o comportamento, não o HTML.
 | Compatibilidade | Confere o ano do carro com os anos abreviados da descrição. Se a descrição não basta, confere na aba **Aplicação**. | `app/agente/regras.py` |
 | Filial | **Joinville primeiro.** Sem estoque, a próxima da ordem (JOI, ITJ, CH, SJ, CRI). Sem estoque em nenhuma, escala para humano. | `app/agente/pedido.py` |
 | Pagamento | **28 dias** em 1 parcela. Se não existir, **à vista**. Se nenhuma, escala. | `app/agente/pedido.py` |
-| Transportadora | Sempre pergunta ao cliente: **entrega** (MotoX Joinville) ou **retirada**. | `app/agente/pedido.py` |
+| Transportadora | Sempre pergunta ao cliente: **entrega** (MotoX Joinville) ou **retirada**. Retirada usa a opção da filial que despacha (Joinville: `RETIRA-JOI`). | `app/agente/pedido.py` |
+| Cliente | O código vem do nome do contato salvo no WhatsApp (`012478-Nome`). Sem código, não adivinha: pergunta ou escala. | `app/agente/clientes.py` |
 | Confirmação | Pede confirmação da peça. Só adiciona ao carrinho depois do "sim". | `app/agente/fluxo.py` |
 | Mais peças | Depois de adicionar, pergunta se precisa de mais alguma peça. | `app/agente/fluxo.py` |
 
@@ -53,8 +54,8 @@ disparam resposta.
 
 ## Pontos ainda em aberto
 
-- Nome exato da opção de **retirada** na lista de transportadoras (a regra usa o termo `retira`;
-  se não achar, escala para humano em vez de escolher outra).
+- Nome das opções de retirada das outras filiais (só `RETIRA-JOI` foi confirmada). Se a opção
+  não existir, escala para humano em vez de escolher outra.
 - Ordem das filiais depois de Joinville (hoje: ITJ, CH, SJ, CRI).
 - Se o botão **+** da lista de clientes registra check-in (por isso não é usado).
 - Origem da imagem (endereço direto ou apenas exibida na tela).

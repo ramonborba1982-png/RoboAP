@@ -83,7 +83,8 @@ def test_lista_vazia():
 TRANSPORTADORAS = [
     "000566 - MOTOX APP TECNOLOGIA LTDA (JOINVILLE)",
     "000700 - OUTRA TRANSPORTADORA LTDA",
-    "000001 - RETIRA NA LOJA",
+    "000001 - RETIRA-JOI",
+    "000002 - RETIRA-ITJ",
 ]
 
 
@@ -98,10 +99,26 @@ def test_motox_de_outra_cidade_nao_serve():
     assert escolher_transportadora(["000567 - MOTOX APP TECNOLOGIA LTDA (ITAJAI)"], True) is None
 
 
-def test_retirada_usa_opcao_de_retirada():
-    assert escolher_transportadora(TRANSPORTADORAS, entrega=False) == "000001 - RETIRA NA LOJA"
+def test_retirada_em_joinville_usa_retira_joi():
+    assert escolher_transportadora(TRANSPORTADORAS, entrega=False) == "000001 - RETIRA-JOI"
 
 
-def test_retirada_sem_opcao_cadastrada_nao_chuta():
-    # Se o sistema não tiver uma opção de retirada, não escolhe outra transportadora.
+def test_retirada_segue_a_filial_que_despacha():
+    assert (
+        escolher_transportadora(TRANSPORTADORAS, entrega=False, filial="ITJ")
+        == "000002 - RETIRA-ITJ"
+    )
+
+
+def test_retirada_de_filial_sem_opcao_cadastrada_nao_chuta():
+    # Não existe RETIRA-CH na lista: não escolhe outra opção, devolve None para escalar.
+    assert escolher_transportadora(TRANSPORTADORAS, entrega=False, filial="CH") is None
+
+
+def test_retirada_sem_nenhuma_opcao_de_retirada_nao_chuta():
     assert escolher_transportadora(TRANSPORTADORAS[:2], entrega=False) is None
+
+
+def test_entrega_nao_depende_da_filial():
+    esperado = "000566 - MOTOX APP TECNOLOGIA LTDA (JOINVILLE)"
+    assert escolher_transportadora(TRANSPORTADORAS, entrega=True, filial="CH") == esperado
